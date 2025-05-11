@@ -1,0 +1,21 @@
+{
+  "name": "serverapi---accountstatusla",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "5.0.0",
+    "mongoose": "^8.14.1",
+    "uuid": "^11.1.0"
+  },
+  "description": "",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module"
+}
