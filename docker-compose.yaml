@@ -1,15 +1,10 @@
 services:
   api:
     build: .
-    container_name: server-api
     volumes:
       - type: bind
         source: ./.env
-        target: /opt/app/.env
-      - type: bind
-        source: .
-        target: /opt/app
-    working_dir: /opt/app
+        target: /opt/app/accountStatusLA/.env
     ports:
       - "3001:3001"
     environment:
