@@ -28,22 +28,22 @@ router.post('/register', async (req, res) => {
     res.json({_id: newUser["_id"], nickname, settings});
 });
 
+router.get('/all', async (req, res) => {
+    const users = await User.find({
+        _id: { $ne: req.query.exclude }
+    });
+    if (!users) {
+        return res.status(404).json({error: 'Users not found'});
+    }
+    res.json(users);
+});
+
 router.get('/:id', async (req, res) => {
     const user = await User.findOne({_id: req.params.id});
     if (!user) {
         return res.status(404).json({error: 'User not found'});
     }
     res.json(user);
-});
-
-router.post('/all', async (req, res) => {
-    const users = await User.find({
-        _id: { $ne: req.params.id }
-    });
-    if (!users) {
-        return res.status(404).json({error: 'Users not found'});
-    }
-    res.json(users);
 });
 
 export default router;
