@@ -16,7 +16,7 @@ router.put('/update/:id', async (req, res) => {
         {nickname, settings, lastUpdateAt: Date.now()},
         {new: true});
 
-    res.json({_id: newUser["_id"], nickname, settings});
+    res.json({_id: updatedUser["_id"], nickname, settings});
 });
 
 router.post('/register', async (req, res) => {
