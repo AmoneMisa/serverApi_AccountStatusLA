@@ -133,12 +133,13 @@ router.put('/update/:id', async (req, res) => {
  *         description: Ошибка сервера
  */
 router.put('/resetInviteKey/:id', async (req, res) => {
+    console.log(req.params)
     const updatedUser = await User.findOne({_id: req.params.id});
     if (!updatedUser) {
         return res.status(404).json({error: 'User not found'});
     }
 
-    const inviteKey = generateUniqueInviteKey();
+    const inviteKey = await generateUniqueInviteKey();
     await User.findOneAndUpdate(
         {_id: req.params.id},
         {inviteKey},
