@@ -1,5 +1,6 @@
 import express from 'express';
 import User from '../models/Users.js';
+import {generateUniqueInviteKey} from "../utils.js";
 
 const router = express.Router();
 /**
@@ -53,6 +54,53 @@ router.put('/update/:id', async (req, res) => {
 
 /**
  * @swagger
+ * /resetInviteKey/{id}:
+ *   put:
+ *     summary: Сбросить инвайт-код пользователя
+ *     description: Генерирует новый уникальный инвайт-код для пользователя по его ID.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID пользователя
+ *     responses:
+ *       200:
+ *         description: Новый инвайт-код успешно сгенерирован
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                   description: ID пользователя
+ *                 inviteKey:
+ *                   type: string
+ *                   description: Новый инвайт-код
+ *       404:
+ *         description: Пользователь не найден
+ *       500:
+ *         description: Ошибка сервера
+ */
+router.put('/resetInviteKey/:id', async (req, res) => {
+    const updatedUser = await User.findOne({_id: req.params.id});
+    if (!updatedUser) {
+        return res.status(404).json({error: 'User not found'});
+    }
+
+    const inviteKey = generateUniqueInviteKey();
+    await User.findOneAndUpdate(
+        {_id: req.params.id},
+        {inviteKey},
+        {new: true});
+
+    res.json({_id: updatedUser["_id"], inviteKey});
+});
+
+/**
+ * @swagger
  * /register:
  *   post:
  *     summary: Зарегистрировать нового пользователя
@@ -82,16 +130,20 @@ router.put('/update/:id', async (req, res) => {
  *                   type: string
  *                 nickname:
  *                   type: string
+ *                 inviteKey:
+ *                   type: string
  *                 settings:
  *                   type: object
  */
 router.post('/register', async (req, res) => {
     const {nickname, settings} = req.body;
 
-    const newUser = new User({nickname, settings});
+    const inviteKey = await generateUniqueInviteKey();
+
+    const newUser = new User({nickname, settings, inviteKey});
     await newUser.save();
 
-    res.json({_id: newUser["_id"], nickname, settings});
+    res.json({_id: newUser["_id"], nickname, settings, inviteKey});
 });
 
 /**
@@ -119,6 +171,32 @@ router.get('/all', async (req, res) => {
         return res.status(404).json({error: 'Users not found'});
     }
     res.json(users);
+});
+
+/**
+ * @swagger
+ * /key/{key}:
+ *   get:
+ *     summary: Получить пользователя по inviteKey
+ *     parameters:
+ *       - in: path
+ *         name: key
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: inviteKey пользователя
+ *     responses:
+ *       200:
+ *         description: Данные пользователя
+ *       404:
+ *         description: Пользователь не найден
+ */
+router.get('/key/:key', async (req, res) => {
+    const user = await User.findOne({inviteKey: req.params.key});
+    if (!user) {
+        return res.status(404).json({error: 'User not found'});
+    }
+    res.json(user);
 });
 
 /**
