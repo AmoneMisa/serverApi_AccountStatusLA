@@ -5,6 +5,54 @@ import {generateUniqueInviteKey} from "../utils.js";
 const router = express.Router();
 /**
  * @swagger
+ * /subscribers/{inviteKey}:
+ *   get:
+ *     summary: Получить всех пользователей, подписанных на пользователя с заданным inviteKey
+ *     parameters:
+ *       - in: path
+ *         name: inviteKey
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Инвайт-код пользователя
+ *     responses:
+ *       200:
+ *         description: Список подписчиков
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                   nickname:
+ *                     type: string
+ *       404:
+ *         description: Пользователь не найден
+ *       500:
+ *         description: Ошибка сервера
+ */
+router.get('/subscribers/:inviteKey', async (req, res) => {
+    const { inviteKey } = req.params;
+
+    // Проверка существования пользователя с таким inviteKey
+    const user = await User.findOne({ inviteKey });
+    if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Ищем всех, у кого в settings.online.subs есть этот inviteKey
+    const subscribers = await User.find({
+        'settings.online.subs': inviteKey
+    }, '_id nickname');
+
+    res.json(subscribers);
+});
+
+/**
+ * @swagger
  * /update/{id}:
  *   put:
  *     summary: Обновить пользователя по ID
