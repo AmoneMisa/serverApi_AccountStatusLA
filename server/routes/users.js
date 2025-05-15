@@ -46,7 +46,7 @@ router.get('/subscribers/:inviteKey', async (req, res) => {
     // Ищем всех, у кого в settings.online.subs есть этот inviteKey
     const subscribers = await User.find({
         'settings.online.subs': inviteKey
-    }, '_id nickname');
+    }, '_id nickname lastUpdateAt inviteKey');
 
     res.json(subscribers);
 });
@@ -92,12 +92,12 @@ router.put('/update/:id', async (req, res) => {
         return res.status(404).json({error: 'User not found'});
     }
 
-    await User.findOneAndUpdate(
+    const updated = await User.findOneAndUpdate(
         {_id: req.params.id},
         {nickname, settings, lastUpdateAt: Date.now()},
         {new: true});
 
-    res.json({_id: updatedUser["_id"], nickname, settings});
+    res.json({_id: updated["_id"], nickname, settings});
 });
 
 /**
@@ -240,7 +240,7 @@ router.get('/all', async (req, res) => {
  *         description: Пользователь не найден
  */
 router.get('/key/:key', async (req, res) => {
-    const user = await User.findOne({inviteKey: req.params.key});
+    const user = await User.findOne({inviteKey: req.params.key}, '_id nickname lastUpdateAt inviteKey');
     if (!user) {
         return res.status(404).json({error: 'User not found'});
     }
