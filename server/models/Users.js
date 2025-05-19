@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
-    nickname: {type: String, unique: true},
+    nickname: {type: String},
     inviteKey: {type: String, unique: true},
     settings: Object,
     createdAt: { type: Date, default: Date.now },

@@ -36,9 +36,9 @@ const router = express.Router();
  */
 router.get('/subscribers/:inviteKey', async (req, res) => {
     const { inviteKey } = req.params;
-
     // Проверка существования пользователя с таким inviteKey
     const user = await User.findOne({ inviteKey });
+
     if (!user) {
         return res.status(404).json({ error: 'User not found' });
     }
@@ -87,7 +87,7 @@ router.get('/subscribers/:inviteKey', async (req, res) => {
 router.put('/update/:id', async (req, res) => {
     const {nickname, settings} = req.body;
 
-    const updatedUser = await User.findOne({_id: req.params.id});
+    const updatedUser = await User.findById(req.params.id);
     if (!updatedUser) {
         return res.status(404).json({error: 'User not found'});
     }
@@ -133,7 +133,7 @@ router.put('/update/:id', async (req, res) => {
  *         description: Ошибка сервера
  */
 router.put('/resetInviteKey/:id', async (req, res) => {
-    const updatedUser = await User.findOne({_id: req.params.id});
+    const updatedUser = await User.findById(req.params.id);
     if (!updatedUser) {
         return res.status(404).json({error: 'User not found'});
     }
@@ -266,7 +266,7 @@ router.get('/key/:key', async (req, res) => {
  *         description: Пользователь не найден
  */
 router.get('/:id', async (req, res) => {
-    const user = await User.findOne({_id: req.params.id});
+    const user = await User.findById(req.params.id);
     if (!user) {
         return res.status(404).json({error: 'User not found'});
     }
