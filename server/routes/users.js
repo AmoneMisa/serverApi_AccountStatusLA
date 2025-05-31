@@ -199,22 +199,71 @@ router.post('/register', async (req, res) => {
  * /all:
  *   get:
  *     summary: Получить список всех пользователей (кроме указанного)
+ *     description: >
+ *       Возвращает список всех пользователей за исключением пользователя с переданным ID.<br>
+ *       Если указан параметр <code>isPublic</code>, вернёт только публичных пользователей (у которых <code>settings.online.isPublic = true</code>).
  *     parameters:
  *       - in: query
  *         name: exclude
  *         schema:
  *           type: string
- *         description: ID пользователя, которого нужно исключить
+ *         required: true
+ *         description: ID пользователя, которого нужно исключить из списка
+ *       - in: query
+ *         name: isPublic
+ *         schema:
+ *           type: boolean
+ *         required: false
+ *         description: Фильтровать только публичных пользователей (значение true)
  *     responses:
  *       200:
  *         description: Список пользователей
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                     description: ID пользователя
+ *                   nickname:
+ *                     type: string
+ *                     description: Никнейм пользователя
+ *                   lastUpdateAt:
+ *                     type: string
+ *                     format: date-time
+ *                     description: Дата последнего обновления
+ *                   inviteKey:
+ *                     type: string
+ *                     description: Ключ приглашения
  *       404:
  *         description: Пользователи не найдены
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Users not found
  */
+
 router.get('/all', async (req, res) => {
-    const users = await User.find({
-        _id: { $ne: req.query.exclude }
-    });
+    let users;
+    if (req.query?.isPublic) {
+        // Ищем всех, у кого в settings.online.isPublic - true и кто не текущий пользователь
+        users = await User.find({
+            _id: { $ne: req.query.exclude },
+            'settings.online.isPublic': true
+        }, '_id nickname lastUpdateAt inviteKey');
+    } else {
+        // Ищем всех, кто не текущий пользователь
+        users = await User.find({
+            _id: { $ne: req.query.exclude }
+        }, '_id nickname lastUpdateAt inviteKey');
+    }
     if (!users) {
         return res.status(404).json({error: 'Users not found'});
     }
